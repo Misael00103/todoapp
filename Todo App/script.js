@@ -30,41 +30,42 @@ const addOrUpdateTask = () => {
   }
 
   localStorage.setItem("data", JSON.stringify(taskData));
-  updateTaskContainer()
-  reset()
+  updateTaskContainer();
+  reset();
 };
 
 const updateTaskContainer = () => {
   tasksContainer.innerHTML = "";
 
-  taskData.forEach(
-    ({ id, title, date, description }) => {
-        (tasksContainer.innerHTML += `
+  taskData.forEach(({ id, title, date, description }) => {
+    tasksContainer.innerHTML += `
         <div class="task" id="${id}">
           <p><strong>Title:</strong> ${title}</p>
           <p><strong>Date:</strong> ${date}</p>
           <p><strong>Description:</strong> ${description}</p>
-          <button onclick="editTask(this)" type="button" class="btn">Edit</button>
-          <button onclick="deleteTask(this)" type="button" class="btn">Delete</button> 
+          <button onclick="editTask(this)" type="button" class="btn btn-info">Edit</button>
+          <button onclick="deleteTask(this)" type="button" class="btn btn-danger">Delete</button> 
         </div>
-      `)
-    }
-  );
+      `;
+  });
 };
-
 
 const deleteTask = (buttonEl) => {
   const dataArrIndex = taskData.findIndex(
     (item) => item.id === buttonEl.parentElement.id
   );
 
-  buttonEl.parentElement.remove();
-  taskData.splice(dataArrIndex, 1);
-  localStorage.setItem("data", JSON.stringify(taskData));
-}
+  buttonEl.parentElement.classList.add("exit-animation");
+
+  setTimeout(() => {
+    buttonEl.parentElement.remove();
+    taskData.splice(dataArrIndex, 1);
+    localStorage.setItem("data", JSON.stringify(taskData));
+  }, 500); // Ajusta el tiempo de la animación
+};
 
 const editTask = (buttonEl) => {
-    const dataArrIndex = taskData.findIndex(
+  const dataArrIndex = taskData.findIndex(
     (item) => item.id === buttonEl.parentElement.id
   );
 
@@ -76,45 +77,69 @@ const editTask = (buttonEl) => {
 
   addOrUpdateTaskBtn.innerText = "Update Task";
 
-  taskForm.classList.toggle("hidden");  
-}
+  taskForm.classList.toggle("hidden");
+};
 
 const reset = () => {
   titleInput.value = "";
   dateInput.value = "";
   descriptionInput.value = "";
-  taskForm.classList.toggle("hidden");
-  currentTask = {};
+};
+
+if (taskData.length) {
+  updateTaskContainer();
 }
 
-if(taskData.length){
-updateTaskContainer()
-}
-
-openTaskFormBtn.addEventListener("click", () =>
-  taskForm.classList.toggle("hidden")
-);
+openTaskFormBtn.addEventListener("click", () => taskForm.classList.toggle("hidden"));
 
 closeTaskFormBtn.addEventListener("click", () => {
-  const formInputsContainValues = titleInput.value || dateInput.value || descriptionInput.value;
-  const formInputValuesUpdated = titleInput.value !== currentTask.title || dateInput.value !== currentTask.date || descriptionInput.value !== currentTask.description;
+  const formInputsContainValues =
+    titleInput.value || dateInput.value || descriptionInput.value;
+  const formInputValuesUpdated =
+    titleInput.value !== currentTask.title ||
+    dateInput.value !== currentTask.date ||
+    descriptionInput.value !== currentTask.description;
 
   if (formInputsContainValues && formInputValuesUpdated) {
     confirmCloseDialog.showModal();
   } else {
-    reset();
+    taskForm.classList.toggle("hidden");
   }
 });
 
-cancelBtn.addEventListener("click", () => confirmCloseDialog.close());
+cancelBtn.addEventListener("click", () => {
+  confirmCloseDialog.close();
+  taskForm.classList.toggle("hidden");
+});
 
 discardBtn.addEventListener("click", () => {
   confirmCloseDialog.close();
-  reset()
 });
 
 taskForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
   addOrUpdateTask();
+  taskForm.classList.toggle("hidden");
+  reset();
 });
+
+// Agregar efecto de deslizamiento a la derecha y cambio de color al hacer hover en los botones
+const slideRightButtons = (buttons) => {
+  buttons.forEach((button) => {
+    button.addEventListener("mouseover", () => {
+      button.style.transition = "transform 0.3s ease-in-out, background-color 0.3s ease-in-out";
+      button.style.transform = "translateX(5px)";
+      button.style.backgroundColor = "#ff9999"; // Ajusta el color al que desees
+    });
+
+    button.addEventListener("mouseout", () => {
+      button.style.transition = "transform 0.3s ease-in-out, background-color 0.3s ease-in-out";
+      button.style.transform = "translateX(0)";
+      button.style.backgroundColor = ""; // Restablecer al color original
+    });
+  });
+};
+
+const buttons = document.querySelectorAll(".btn");
+slideRightButtons(buttons);
